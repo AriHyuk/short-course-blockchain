@@ -5,36 +5,57 @@ export default function Home() {
   const [walletAddress, setWalletAddress] = useState("");
   const [status, setStatus] = useState("");
   const [chainId, setChainId] = useState("");
+  const [balance, setBalance] = useState(""); // <-- 1. Tambah State Saldo
 
   // --- BAGIAN TUGAS 3: GANTI NIM KAMU DI SINI ---
   const NAMA = "Ari Awaludin";
   const NIM = "221011402404"; 
 
-  const connectWallet = async () => {
+const connectWallet = async () => {
     // @ts-ignore
     if (typeof window.ethereum !== "undefined") {
       try {
-        // Task 1: Request Account
+        setStatus("Connecting...");
+        
+        // Cek provider spesifik Avalanche (biar gak bentrok sama MetaMask)
         // @ts-ignore
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        setWalletAddress(accounts[0]);
+        const provider = window.avalanche || window.ethereum;
 
-        // Task 2: Network Validation
+        // 1. Request Akun
         // @ts-ignore
-        const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });
+        const accounts = await provider.request({ method: "eth_requestAccounts" });
+        const account = accounts[0];
+        setWalletAddress(account);
+
+        // 2. Cek Network
+        // @ts-ignore
+        const chainIdHex = await provider.request({ method: "eth_chainId" });
         setChainId(chainIdHex);
 
-        // 0xa869 adalah Chain ID untuk Avalanche Fuji (Lihat modul 2.2)
+        // 3. Ambil Saldo
+        // @ts-ignore
+        const balanceHex = await provider.request({
+          method: "eth_getBalance",
+          params: [account, "latest"],
+        });
+        
+        const balanceValue = parseInt(balanceHex, 16) / 1e18;
+        setBalance(balanceValue.toFixed(4));
+
         if (chainIdHex === "0xa869") {
           setStatus("✅ Connected to Avalanche Fuji");
         } else {
-          setStatus("❌ Wrong Network! Please switch to Fuji.");
+          setStatus("❌ Wrong Network! Switch to Fuji.");
         }
-      } catch (error) {
+
+      } catch (error: any) {
         console.error(error);
+        // INI PENTING: Munculkan error di layar biar kita tau kenapa
+        alert("GAGAL CONNECT: " + (error.message || error));
+        setStatus("❌ Error: " + (error.message || "Unknown error"));
       }
     } else {
-      alert("Please install Core Wallet");
+      alert("Core Wallet gak ketemu! Coba refresh atau install ulang extension.");
     }
   };
 
@@ -70,6 +91,12 @@ export default function Home() {
               <div className="bg-gray-800 p-3 rounded">
                  <p className="text-gray-400 text-xs">Chain ID:</p>
                  <p>{chainId}</p>
+              </div>
+
+              {/* TAMPILAN SALDO BARU */}
+              <div className="bg-gray-800 p-3 rounded border border-yellow-600">
+                 <p className="text-gray-400 text-xs">Balance:</p>
+                 <p className="text-yellow-400 font-bold">{balance} AVAX</p>
               </div>
 
               {/* WAJIB: Identitas Peserta */}
