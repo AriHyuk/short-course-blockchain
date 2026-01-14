@@ -1,0 +1,16 @@
+{
+  "name": "avalanche-day-2",
+  "version": "1.0.0",
+  "description": "Smart Contract SimpleStorage",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat run scripts/deploy.ts --network avalancheFuji"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.0",
+    "hardhat": "^2.22.5"
+  }
+}
